@@ -1,0 +1,140 @@
+{
+  "name": "Projet 3",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Réception de demande client",
+        "formDescription": "De quoi avez-vous besoin?",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nom"
+            },
+            {
+              "fieldLabel": "Message",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0af7bc5e-a6f0-43a4-a349-06218d182daa",
+      "name": "On form submission",
+      "webhookId": "0d5438b7-e06d-4522-9522-b9d2f0b1a5d5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Client : {{ $node[\"On form submission\"].json[\"Nom\"] }} Demande : {{ $node[\"On form submission\"].json[\"Message\"] }}",
+        "options": {
+          "systemMessage": "\"Tu es un assistant qui trie les demandes. Si le message indique une urgence technique ou un client mécontent, réponds : '🔴 URGENT'. Sinon, réponds : '🟢 NORMAL'. Ne donne que ce mot en réponse.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ca190a4e-e0f0-4077-aac4-c5e563d577d3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "6f48e00f-0bc6-4ef4-b1b3-63801c086feb",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "1lZ1R9gWgbIJ9glZ",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "={{ $node[\"On form submission\"].json[\"Nom\"] }} 🤖 Priorité IA : {{ $json.output }} 💬 Message : {{ $node[\"On form submission\"].json[\"Message\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "476a3ed1-ccb9-4f53-b5f2-41cb4a92404c",
+      "name": "Discord",
+      "webhookId": "c250233b-0c12-4987-9220-015be26dd058",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "ZJPpAnTAZ0H9VmMZ",
+          "name": "Discord Webhook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ed10b734-48ba-41b5-b222-f0649adca771",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a8e6790d342235573580082881a83ff897f52c99f73e330b9d7fe750f83ccf77"
+  },
+  "id": "F0jVJmqZ0r1EMFXdLBb1E",
+  "tags": []
+}
