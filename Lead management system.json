@@ -1,0 +1,210 @@
+{
+  "name": "Lead management system",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Recueil des demandes ",
+        "formDescription": "Veuillez saisir votr deande ici , nous le traitons directement ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Entreprise ou Nom du client "
+            },
+            {
+              "fieldLabel": "Message"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "895b7862-f183-4704-b339-848c01dfa7d9",
+      "name": "On form submission",
+      "webhookId": "381822d5-afc9-46d7-b337-b643abd64cb1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Client : {{ $node[\"On form submission\"].json[\"Entreprise ou Nom du client\"] }} Demande : {{ $node[\"On form submission\"].json[\"Message\"] }}",
+        "options": {
+          "systemMessage": "\"Tu es un gestionnaire de relation client expert. Analyse la demande reçue.\n\nDétermine l'urgence : Réponds '🔴 URGENT' ou '🟢 NORMAL'.\n\nRédige une réponse courte et polie (max 2 phrases) pour accuser réception.\n\nFormat de réponse obligatoire : Priorité : [Badge] Réponse suggérée : [Ton texte]\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "deda02e2-0e3f-4706-95ad-1edff233b392",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "ebad66e1-db4b-4ad0-980f-64e642543432",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "bsYEf2bi6RTymDRj",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Y97J9XsVmN5YVTeFPJiEqpj0qYRx_cQTY56nyFHA3ng",
+          "mode": "list",
+          "cachedResultName": "CRM Client ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Y97J9XsVmN5YVTeFPJiEqpj0qYRx_cQTY56nyFHA3ng/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Y97J9XsVmN5YVTeFPJiEqpj0qYRx_cQTY56nyFHA3ng/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now }}",
+            "Nom du Client": "={{ $('On form submission').item.json['Entreprise ou Nom du client '] }}",
+            "Analyse de l'IA ": "={{ $json.output }}",
+            "Message complet": "={{ $('On form submission').item.json.Message }}",
+            "Réponse suggérée par IA": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nom du Client",
+              "displayName": "Nom du Client",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Analyse de l'IA ",
+              "displayName": "Analyse de l'IA ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message complet",
+              "displayName": "Message complet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Réponse suggérée par IA",
+              "displayName": "Réponse suggérée par IA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        0
+      ],
+      "id": "3994c62a-6d42-46f4-8e26-c8d81f556720",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "EbpdlFBBYkigZQ0T",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "85eefe0e-26e8-4adf-9eb0-a6ab1379bdd1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7187c80a884d18f9ea50ad768d113c3172013d6fa36dc6a5502447c4aa74bb1"
+  },
+  "id": "GG--uRCq_atZ-7G874do4",
+  "tags": []
+}
